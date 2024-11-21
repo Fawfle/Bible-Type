@@ -8,15 +8,25 @@
 
   <body>
     <div id="passageTitle">N/A</div>
-    <textarea id="passage" disabled="disabled" unselectable="on" rows="5">JS Loading...</textarea>
-    <textarea id="textInput" autocapitalize="off" autocomplete="off" spellcheck="false" rows="5"></textarea>
+    <textarea id="passage" disabled="disabled" unselectable="on" rows="5">
+JS Loading...</textarea
+    >
+    <textarea
+      id="textInput"
+      autocapitalize="off"
+      autocomplete="off"
+      spellcheck="false"
+      rows="5"
+    ></textarea>
 
     <div style="margin-top: 10px"></div>
 
     <div id="buttons">
       <button id="randomVerse" title="alt + r">Random Verse</button>
       <button disabled="" id="nextVerse" title="alt + k">Next Verse</button>
-      <button disabled="" id="previousVerse" title="alt + j">Previous Verse</button>
+      <button disabled="" id="previousVerse" title="alt + j">
+        Previous Verse
+      </button>
       <select id="bookSelect">
         <option disabled="" selected="" value="">Select Book</option>
       </select>
@@ -37,5 +47,9 @@
     </div>
 
     <script src="./index.js" type="module"></script>
+    <script src="./scripts/gameManager.js" type="module"></script>
+    <script src="./scripts/bibleManager.js" type="module"></script>
+    <script src="./scripts/saveManager.js" type="module"></script>
+    <script src="./scripts/utils.js" type="module"></script>
   </body>
 </html>
