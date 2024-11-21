@@ -32,28 +32,15 @@ export default class BibleManager {
     // Active/completed verse
     this.active = structuredClone(this.selected);
 
-    bookSelectInput.addEventListener("input", (e) =>
-      this.updatePassageSelect(e)
-    );
-    chapterSelectInput.addEventListener("input", (e) =>
-      this.updatePassageSelect(e)
-    );
-    verseSelectInput.addEventListener("input", (e) =>
-      this.updatePassageSelect(e)
-    );
-    bibleVersionSelectInput.addEventListener("input", (e) =>
-      this.updateBibleVersion(e)
-    );
+    bookSelectInput.addEventListener("input", (e) => this.updateSelectionMenu(e));
+    chapterSelectInput.addEventListener("input", (e) => this.updateSelectionMenu(e));
+    verseSelectInput.addEventListener("input", (e) => this.updateSelectionMenu(e));
+    bibleVersionSelectInput.addEventListener("input", (e) => this.updateBibleVersion(e));
 
     bibleLoader.onLoad[0] = ((d) => this.bibleLoaded(d));
   }
 
-  // TODO: Make classes update when finishing (probably "optimizable")
   updatePassageSelect() {
-    for (let i = 0; i < this.bible.length; i++) {
-      if (this.saveManager.save.completed[i].flat().reduce((a, b) => a + b).indexOf(0) == -1) document.getElementById("bibleSelect" + i).classList.add(FINISHED_DROPDOWN_ITEM);
-  }
-
     if (bookSelectInput.value == "") return;
     chapterSelectInput.disabled = false;
 
@@ -69,11 +56,6 @@ export default class BibleManager {
       let show = i + 1 <= chapterCount;
       c.style.display = show ? "inline" : "none";
       c.disabled = show ? false : true;
-
-      if (show) {
-        if (this.saveManager.save.completed[this.selected.book.index][i].indexOf("0") == -1) c.classList.add(FINISHED_DROPDOWN_ITEM);
-        else c.classList.remove(FINISHED_DROPDOWN_ITEM);
-      }
     }
 
     if (chapterSelectInput.value == "") return;
@@ -92,11 +74,6 @@ export default class BibleManager {
       let show = i + 1 <= verseCount;
       v.style.display = show ? "inline" : "none";
       v.disabled = show ? false : true;
-
-      if (show) {
-        if (this.saveManager.save.completed[this.selected.book.index][this.selected.chapter.index][i] == "1") v.classList.add(FINISHED_DROPDOWN_ITEM);
-        else v.classList.remove(FINISHED_DROPDOWN_ITEM);
-      }
     }
 
     if (verseSelectInput.value == "") return;
@@ -116,6 +93,37 @@ export default class BibleManager {
       return;
     this.bible = this.bibles[bibleVersionSelectInput.value];
     //reset();
+  }
+
+  updateCompletedVerses() {
+    for (let i = 0; i < this.bible.length; i++) {
+      if (this.saveManager.save.completed[i].flat().reduce((a, b) => a + b).indexOf(0) == -1) document.getElementById("bibleSelect" + i).classList.add(FINISHED_DROPDOWN_ITEM);
+    }
+
+    if (bookSelectInput.value == "") return;
+
+    let chapterCount = this.selected.book.data.chapters.length;
+
+    for (let i = 0; i < chapterCount; i++) {
+      let c = document.getElementById("chapterSelect" + i);
+      if (this.saveManager.save.completed[this.selected.book.index][i].indexOf("0") == -1) c.classList.add(FINISHED_DROPDOWN_ITEM);
+      else c.classList.remove(FINISHED_DROPDOWN_ITEM);
+    }
+
+    if (chapterSelectInput.value == "") return;
+
+    let verseCount = this.selected.chapter.data.length;
+
+    for (let i = 0; i < verseCount; i++) {
+      let v = document.getElementById("verseSelect" + i);
+      if (this.saveManager.save.completed[this.selected.book.index][this.selected.chapter.index][i] == "1") v.classList.add(FINISHED_DROPDOWN_ITEM);
+      else v.classList.remove(FINISHED_DROPDOWN_ITEM);
+    }
+  }
+
+  updateSelectionMenu() {
+    this.updatePassageSelect();
+    this.updateCompletedVerses();
   }
 
   getNextVerse() {
@@ -151,7 +159,7 @@ export default class BibleManager {
     bookSelect.value = bi;
     chapterSelect.value = ci;
     verseSelect.value = vi;
-    this.updatePassageSelect();
+    this.updateSelectionMenu();
 
     return {
       verse: this.formatVerse(v),
@@ -194,7 +202,7 @@ export default class BibleManager {
     bookSelect.value = bi;
     chapterSelect.value = ci;
     verseSelect.value = vi;
-    this.updatePassageSelect();
+    this.updateSelectionMenu();
 
     return {
       verse: this.formatVerse(v),
@@ -215,7 +223,6 @@ export default class BibleManager {
     };
   }
 
-  // TODO: remove duplicate flag
   getRandomVerse() {
     //console.log(bible);
     let bi = Math.floor(Math.random() * this.bible.length);
@@ -230,7 +237,7 @@ export default class BibleManager {
     bookSelect.value = bi;
     chapterSelect.value = ci;
     verseSelect.value = vi;
-    this.updatePassageSelect();
+    this.updateSelectionMenu();
 
     return {
       verse: this.formatVerse(verse),
@@ -287,7 +294,7 @@ export default class BibleManager {
 
     this.saveManager.loadSave({bible: this.bible});
 
-    this.updatePassageSelect();
+    this.updateSelectionMenu();
   }
 
   updateActiveVerse() {

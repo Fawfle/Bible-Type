@@ -8,7 +8,14 @@ const selectVerseButton = document.getElementById("selectVerse");
 const nextVerseButton = document.getElementById("nextVerse");
 const previousVerseButton = document.getElementById("previousVerse");
 
+const changelogButton = document.getElementById("changelogButton");
+
 export const VERSION = "1.0";
+
+changelogButton.innerText = `${VERSION} Changelog`;
+changelogButton.onclick = () => alert("Added basic saving for completed verses, chapters, and books (should appear in green once finished!)");
+
+
 
 let bibleLoader = new BibleLoader();
 let saveManager = new SaveManager(bibleLoader);
@@ -39,6 +46,7 @@ function handleHotkeys(e) {
 function onPassageComplete() {
   let active = bibleManager.active;
   saveManager.setVerseCompleted(active);
+  bibleManager.updateCompletedVerses();
 }
 
 function getRandomPrompt(e) {
