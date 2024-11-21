@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bible Type</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div id="passageTitle">N/A</div>
+    <textarea id="passage" disabled="disabled" unselectable="on" rows="5">JS Loading...</textarea>
+    <textarea id="textInput" autocapitalize="off" autocomplete="off" spellcheck="false" rows="5"></textarea>
+
+    <div style="margin-top: 10px"></div>
+
+    <div id="buttons">
+      <button id="randomVerse" title="alt + r">Random Verse</button>
+      <button disabled="" id="nextVerse" title="alt + k">Next Verse</button>
+      <button disabled="" id="previousVerse" title="alt + j">Previous Verse</button>
+      <select id="bookSelect">
+        <option disabled="" selected="" value="">Select Book</option>
+      </select>
+      <select disabled id="chapterSelect">
+        <option disabled="" selected="" value="">Select Chapter</option>
+      </select>
+      <select disabled id="verseSelect">
+        <option disabled="" selected="" value="">Select Verse</option>
+      </select>
+      <button disabled="" id="selectVerse">Select</button>
+    </div>
+
+    <div id="results"></div>
+
+    <div style="position: absolute; bottom: 10px; left: 10px">
+      <select id="bibleVersionSelect"></select>
+      <span style="font: 12px arial">hover over buttons to see hotkeys!</span>
+    </div>
+
+    <script src="./index.js" type="module"></script>
+  </body>
+</html>
