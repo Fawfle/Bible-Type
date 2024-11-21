@@ -22,6 +22,8 @@ export default class GameManager {
     this.totalTime = 0;
 
     this.reset();
+
+    this.onPassageComplete = [];
   }
 
   startNewPrompt(event, passageData) {
@@ -48,6 +50,8 @@ export default class GameManager {
   Time: ${formatNumber(this.totalTime / 1000)}s
   WPM: ${formatNumber((countWords(this.passage) / (this.totalTime / 1000)) * 60)}
   `;
+  
+    this.onPassageComplete.forEach(f => f());
   }
 
   updateInput(event) {

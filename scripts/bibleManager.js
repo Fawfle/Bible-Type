@@ -9,21 +9,18 @@ const previousVerseButton = document.getElementById("previousVerse");
 
 const passageElement = document.getElementById("passage");
 
-const BIBLE_FILES = [
-  { name: "American Standard Version", path: "bible_asv.json" },
-  { name: "King James Version", path: "bible_kjv.json" },
-  { name: "Basic British English", path: "bible_bbe.json" },
-];
-
-const DEFAULT_BIBLE_FILE_PATH = BIBLE_FILES[0].path;
-let BIBLES_LOADED = 0;
+const FINISHED_DROPDOWN_ITEM = "finishedDropdown";
+ 
 
 export default class BibleManager {
-  constructor() {
+  constructor(bibleLoader, saveManager) {
+    this.saveManager = saveManager;
+
     this.bible;
     this.bibles = [];
 
-    this.onBibleLoad = [];
+    this.maxChapters;
+    this.maxVerses;
 
     // SELECTED verse
     this.selected = {
@@ -48,29 +45,15 @@ export default class BibleManager {
       this.updateBibleVersion(e)
     );
 
-    this.fetchBibles();
+    bibleLoader.onLoad[0] = ((d) => this.bibleLoaded(d));
   }
 
-  fetchBibles() {
-    passageElement.innerText = `Loading ./bibles/...`;
-
-    for (let i = 0; i < BIBLE_FILES.length; i++) {
-      bibleVersionSelectInput.innerHTML += `<option value="${i}">${BIBLE_FILES[i].name}</option>`;
-
-      fetch("./bibles/" + BIBLE_FILES[i].path)
-        .then((response) => response.json())
-        .then((data) => {
-          if (BIBLE_FILES[i].path == DEFAULT_BIBLE_FILE_PATH) this.bible = data;
-
-          this.bibles[i] = data;
-          BIBLES_LOADED++;
-          if (BIBLES_LOADED >= BIBLE_FILES.length) this.bibleLoaded();
-        })
-        .catch((e) => console.log(e));
-    }
-  }
-
+  // TODO: Make classes update when finishing (probably "optimizable")
   updatePassageSelect() {
+    for (let i = 0; i < this.bible.length; i++) {
+      if (this.saveManager.save.completed[i].flat().reduce((a, b) => a + b).indexOf(0) == -1) document.getElementById("bibleSelect" + i).classList.add(FINISHED_DROPDOWN_ITEM);
+  }
+
     if (bookSelectInput.value == "") return;
     chapterSelectInput.disabled = false;
 
@@ -79,50 +62,50 @@ export default class BibleManager {
 
     // cap chapter count input at maximum chapter
     let chapterCount = this.selected.book.data.chapters.length;
-    if (
-      chapterSelectInput.value != "" &&
-      chapterSelectInput.value >= chapterCount
-    )
-      chapterSelectInput.value = chapterCount - 1;
+    if (chapterSelectInput.value != "" && chapterSelectInput.value >= chapterCount) chapterSelectInput.value = chapterCount - 1;
 
-    // update dropdown, i = 1 to skip placeholder, -2 b/c placeholder and no chapter 0
-    for (
-      let i = 1;
-      i < chapterSelectInput.innerHTML.split("/").length - 2;
-      i++
-    ) {
+    for (let i = 0; i < this.maxChapters; i++) {
       let c = document.getElementById("chapterSelect" + i);
       let show = i + 1 <= chapterCount;
       c.style.display = show ? "inline" : "none";
       c.disabled = show ? false : true;
+
+      if (show) {
+        if (this.saveManager.save.completed[this.selected.book.index][i].indexOf("0") == -1) c.classList.add(FINISHED_DROPDOWN_ITEM);
+        else c.classList.remove(FINISHED_DROPDOWN_ITEM);
+      }
     }
 
     if (chapterSelectInput.value == "") return;
     verseSelectInput.disabled = false;
 
     this.selected.chapter.index = chapterSelectInput.value;
-    this.selected.chapter.data =
-      this.selected.book.data.chapters[this.selected.chapter.index];
+    this.selected.chapter.data = this.selected.book.data.chapters[this.selected.chapter.index];
 
     // cap verse count at maximum verse
-    let verseCount = this.selected.chapter.length;
-    if (verseSelectInput.value != "" && verseSelectInput.value >= verseCount)
-      verseSelectInput.value = verseCount - 1;
+    let verseCount = this.selected.chapter.data.length;
+    if (verseSelectInput.value != "" && verseSelectInput.value >= verseCount) verseSelectInput.value = verseCount - 1;
 
     // update dropdown
-    for (let i = 1; i < verseSelectInput.innerHTML.split("/").length - 2; i++) {
+    for (let i = 0; i < this.maxVerses; i++) {
       let v = document.getElementById("verseSelect" + i);
       let show = i + 1 <= verseCount;
       v.style.display = show ? "inline" : "none";
       v.disabled = show ? false : true;
+
+      if (show) {
+        if (this.saveManager.save.completed[this.selected.book.index][this.selected.chapter.index][i] == "1") v.classList.add(FINISHED_DROPDOWN_ITEM);
+        else v.classList.remove(FINISHED_DROPDOWN_ITEM);
+      }
     }
 
     if (verseSelectInput.value == "") return;
     selectVerseButton.disabled = false;
 
     this.selected.verse.index = verseSelectInput.value;
-    this.selected.verse.data =
-      this.selected.chapter.data[this.selected.verse.index];
+    this.selected.verse.data = this.selected.chapter.data[this.selected.verse.index];
+
+    if (!this.isVerseDataValid(this.active)) return;
 
     nextVerseButton.disabled = this.isVerseDataFinal(this.active);
     previousVerseButton.disabled = this.isVerseDataFirst(this.active);
@@ -225,7 +208,7 @@ export default class BibleManager {
     return {
       verse: this.formatVerse(this.selected.verse.data),
       name: this.formatVerseName(
-        this.selected.verse.book.data,
+        this.selected.book.data,
         this.selected.chapter.index,
         this.selected.verse.index
       ),
@@ -270,44 +253,48 @@ export default class BibleManager {
     return v;
   }
 
-  bibleLoaded() {
+  bibleLoaded(data) {
+    this.bible = data.bible;
+    this.bibles = data.bibles;
+
     passageElement.innerText = "Loaded! Click a button!";
 
     for (let i in this.bible) {
-      bookSelectInput.innerHTML += `<option value="${i}">${this.bible[i].name}</option>`;
+      bookSelectInput.innerHTML += `<option id="bibleSelect${i}" value="${i}">${this.bible[i].name}</option>`;
     }
 
-    let maxChapters = 0;
-    let maxVerses = 0;
+    this.maxChapters = 0;
+    this.maxVerses = 0;
 
     for (let i = 0; i < this.bible.length; i++) {
-      maxChapters = Math.max(maxChapters, this.bible[i].chapters.length);
+      this.maxChapters = Math.max(this.maxChapters, this.bible[i].chapters.length);
       for (let j = 0; j < this.bible[i].chapters.length; j++) {
-        maxVerses = Math.max(maxVerses, this.bible[i].chapters[j].length);
+        this.maxVerses = Math.max(this.maxVerses, this.bible[i].chapters[j].length);
       }
     }
 
-    for (let i = 0; i < maxChapters; i++) {
+    for (let i = 0; i < this.maxChapters; i++) {
       chapterSelectInput.innerHTML += `<option id="chapterSelect${i}" value="${i}">${
         i + 1
       }</option>`;
     }
 
-    for (let i = 0; i < maxVerses; i++) {
+    for (let i = 0; i < this.maxVerses; i++) {
       verseSelectInput.innerHTML += `<option id="verseSelect${i}" value="${i}">${
         i + 1
       }</option>`;
     }
 
-    this.updatePassageSelect();
+    this.saveManager.loadSave({bible: this.bible});
 
-    /*
-    save = loadSaveCookie(document.cookie);
-    if (save == null) {
-      save = createNewSave();
-      updateSaveCookie();
-    }
-    */
+    this.updatePassageSelect();
+  }
+
+  updateActiveVerse() {
+    this.active = structuredClone(this.selected);
+
+    nextVerseButton.disabled = this.isVerseDataFinal(this.active);
+    previousVerseButton.disabled = this.isVerseDataFirst(this.active);
   }
 
   isVerseDataValid(data) {
@@ -320,15 +307,15 @@ export default class BibleManager {
 
   isVerseDataFinal(data) {
     return (
-      data.book.index == this.bible.length - 1 &&
-      data.chapter.index == data.book.data.chapters.length - 1 &&
-      data.verse.index == data.chapter.data.length - 1
+      data.book.index >= this.bible.length - 1 &&
+      data.chapter.index >= data.book.data.chapters.length - 1 &&
+      data.verse.index >= data.chapter.data.length - 1
     );
   }
 
   isVerseDataFirst(data) {
     return (
-      data.book.index == 0 && data.chapter.index == 0 && data.verse.index == 0
+      data.book.index <= 0 && data.chapter.index <= 0 && data.verse.index <= 0
     );
   }
 }

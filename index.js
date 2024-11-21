@@ -1,17 +1,22 @@
 import GameManager from "./scripts/gameManager.js"
 import BibleManager from "./scripts/bibleManager.js";
 import SaveManager from "./scripts/saveManager.js";
+import BibleLoader from "./scripts/bibleLoader.js";
 
 const randomVerseButton = document.getElementById("randomVerse");
 const selectVerseButton = document.getElementById("selectVerse");
 const nextVerseButton = document.getElementById("nextVerse");
 const previousVerseButton = document.getElementById("previousVerse");
 
-const VERSION = 0.1;
+export const VERSION = "1.0";
+
+let bibleLoader = new BibleLoader();
+let saveManager = new SaveManager(bibleLoader);
 
 let game = new GameManager();
-let bibleManager = new BibleManager();
-//let saveManager = new SaveManager();
+let bibleManager = new BibleManager(bibleLoader, saveManager);
+
+game.onPassageComplete.push(onPassageComplete);
 
 randomVerseButton.addEventListener("click", getRandomPrompt);
 selectVerseButton.addEventListener("click", getSelectedVersePrompt);
@@ -31,6 +36,11 @@ function handleHotkeys(e) {
   else if (e.key == "k") getNextVersePrompt();
 }
 
+function onPassageComplete() {
+  let active = bibleManager.active;
+  saveManager.setVerseCompleted(active);
+}
+
 function getRandomPrompt(e) {
   startPrompt(e, bibleManager.getRandomVerse());
 }
@@ -48,6 +58,6 @@ function getPreviousVersePrompt(e) {
 }
 
 function startPrompt(e, verse) {
-  bibleManager.active = structuredClone(bibleManager.selected);
+  bibleManager.updateActiveVerse();
   game.startNewPrompt(e, verse);
 }
