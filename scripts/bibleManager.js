@@ -148,8 +148,9 @@ export default class BibleManager {
 
     // next book
     if (ci >= b.chapters.length) {
+      console.log("next book");
       bi++;
-      b = bible[bi];
+      b = this.bible[bi];
       ci = 0;
     }
 
@@ -191,7 +192,7 @@ export default class BibleManager {
     // previous book
     if (ci < 0) {
       bi--;
-      b = bible[bi];
+      b = this.bible[bi];
       ci = b.chapters.length - 1;
       vi = b.chapters[ci].length - 1;
     }

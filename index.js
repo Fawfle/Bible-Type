@@ -10,12 +10,22 @@ const previousVerseButton = document.getElementById("previousVerse");
 
 const changelogButton = document.getElementById("changelogButton");
 
-export const VERSION = "1.0";
+export const VERSION = "1.01";
 
 changelogButton.innerText = `${VERSION} Changelog`;
-changelogButton.onclick = () => alert("Added basic saving for completed verses, chapters, and books (should appear in green once finished!)");
+changelogButton.onclick = () => alert("1.0: Saving for completed verses \n1.01: Fixed issue with next/previous verse");
 
+/* TODO Improvements
 
+** bug fixes
+
+** random verse (no repeat for completionists)
+
+** achievement functionality / achievements
+
+** improved UI
+
+*/
 
 let bibleLoader = new BibleLoader();
 let saveManager = new SaveManager(bibleLoader);
