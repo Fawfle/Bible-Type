@@ -1,4 +1,4 @@
- export function countWords(str) {
+export function countWords(str) {
   return str.trim().split(/\s+/).length;
 }
 

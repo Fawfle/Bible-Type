@@ -10,10 +10,10 @@ const previousVerseButton = document.getElementById("previousVerse");
 
 const changelogButton = document.getElementById("changelogButton");
 
-export const VERSION = "1.01";
+export const VERSION = "1.02";
 
 changelogButton.innerText = `${VERSION} Changelog`;
-changelogButton.onclick = () => alert("1.0: Saving for completed verses \n1.01: Fixed issue with next/previous verse");
+changelogButton.onclick = () => alert("1.0: Saving for completed verses \n1.01: Fixed issue with next/previous verse \n 1.02: Added CPM");
 
 /* TODO Improvements
 

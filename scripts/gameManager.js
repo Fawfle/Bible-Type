@@ -49,6 +49,7 @@ export default class GameManager {
     resultsText.innerText = `
   Time: ${formatNumber(this.totalTime / 1000)}s
   WPM: ${formatNumber((countWords(this.passage) / (this.totalTime / 1000)) * 60)}
+  CPM: ${formatNumber((this.passage.length / (this.totalTime / 1000)) * 60)}
   `;
   
     this.onPassageComplete.forEach(f => f());
